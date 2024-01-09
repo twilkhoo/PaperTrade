@@ -7,21 +7,16 @@ customtkinter.set_default_color_theme("blue")
 class App(customtkinter.CTk):
 
   currentAmount = 0
+  startingAmount = 0
+  currentStocks = {}
+  currentETFs = {}
+  currentCrypto = {}
 
   def __init__(self):
     super().__init__()
     self.title("PaperTrade")
     self.geometry("1200x800")
     self.resizable(False, False)
-
-    # General callback functions.
-    def refetchAll():
-      functions.fetchEverything()
-
-    def refetchCurrentAmount(label):
-      data = functions.fetchEverything()
-      print(f"currentAmount: {data['currentAmount']}")
-      label.configure(text=data["currentAmount"])
 
     # Title.
     title = customtkinter.CTkLabel(master=self, text="PaperTrade", font=customtkinter.CTkFont(size=40, weight="bold"))
@@ -45,31 +40,6 @@ class App(customtkinter.CTk):
     currentMoneyLabel = customtkinter.CTkLabel(master=overviewFrame, text=self.currentAmount, font=customtkinter.CTkFont(size=30, weight="bold"))
     currentMoneyLabel.place(x=0, y=100)
 
-    refetchButton = customtkinter.CTkButton(master=overviewFrame, text="refetch", command=lambda: refetchCurrentAmount(currentMoneyLabel))
-    refetchButton.place(x=0, y=300)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     # Settings.
     settingsFrame = customtkinter.CTkFrame(master=tabView.tab("Settings"), width=900, height=500)
     settingsFrame.pack(padx=0, pady=20)
@@ -84,7 +54,24 @@ class App(customtkinter.CTk):
     addFundsSubLabel2.place(x=0, y=120)
     addFundsEntry = customtkinter.CTkEntry(master=settingsFrame, placeholder_text="$X.XX")
     addFundsEntry.place(x=0, y=150)
-    addFundsButton = customtkinter.CTkButton(master=settingsFrame, text="Add")
+
+    def actuallyAddFunds(amountToAdd, window):
+      functions.addFunds(amountToAdd, self.currentAmount)
+      window.destroy()
+
+    def openConfirmAddFunds():
+      amountToAdd = addFundsEntry.get()
+      confirmAddFundsWindow = customtkinter.CTkToplevel()
+      confirmAddFundsWindow.geometry("400x300")
+      confirmAddFundsWindow.title("Add funds?")
+      addFundsInnerLabel = customtkinter.CTkLabel(master=confirmAddFundsWindow, text=f"Add ${amountToAdd}?", font=customtkinter.CTkFont(size=20))
+      addFundsInnerLabel.pack(padx=0, pady=50)
+      addFundsConfirmButton = customtkinter.CTkButton(master=confirmAddFundsWindow, text="Add", command=lambda: actuallyAddFunds(amountToAdd, confirmAddFundsWindow))
+      addFundsConfirmButton.place(x=50, y=100)
+      addFundsCancelButton = customtkinter.CTkButton(master=confirmAddFundsWindow, text="Cancel", fg_color="grey", command = lambda: confirmAddFundsWindow.destroy() )
+      addFundsCancelButton.place(x=200, y=100)
+
+    addFundsButton = customtkinter.CTkButton(master=settingsFrame, text="Add", command=openConfirmAddFunds)
     addFundsButton.place(x=150, y=150)
 
     resetLabel = customtkinter.CTkLabel(master=settingsFrame, text="Reset", font=customtkinter.CTkFont(size=20))
@@ -96,6 +83,20 @@ class App(customtkinter.CTk):
     addFundsButton = customtkinter.CTkButton(master=settingsFrame, text="Reset")
     addFundsButton.place(x=0, y=350)
 
+
+    # General callback functions.
+    def refetchAll():
+      data = functions.fetchEverything()
+      self.startingAmount = data["startingAmount"]
+      self.currentAmount = data["currentAmount"]
+
+      currentMoneyLabel.configure(text=self.currentAmount)
+
+    # Generic refetch.
+    refetchButton = customtkinter.CTkButton(master=overviewFrame, text="refetch", command=refetchAll)
+    refetchButton.place(x=0, y=300)
+
+    # Fetch on load.
     refetchAll()
 
 

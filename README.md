@@ -10,6 +10,7 @@ First, install some dependencies:
 pip install customtkinter # The GUI
 pip install dotenv # Environment Vars
 pip install pymongo # MongoDB API for python
+pip install requests # HTTP requests library
 ```
 
 Then create a `.env` file at the root. Set `MONGO_CONNECTION_STRING` to a connection string of a blank MongoDB cluster, and `MBOUM_API_KEY` to a MBOUM API key.
